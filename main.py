@@ -47,7 +47,7 @@ df['Pos'] = df['Pos'].str[:2]
 df['Age'] = df['Age'].str[:2]
 df.drop(['Born'], inplace=True, axis=1)
 
-# I noticed there were 21 inique teams as opposed to 20,on checking there was a team named Squad which is the columns
+# I noticed there were 21 unique teams as opposed to 20,on checking there was a team named Squad which is the columns
 # name. drop repeated headers scrapped as rows
 df.drop(df[df['Squad'] == 'Squad'].index, inplace=True)
 
@@ -60,14 +60,27 @@ df[['Age', 'MP', 'Starts', 'Min', 'Gls', 'Ast', 'G-PK', 'PK', 'PKatt', 'CrdY', '
     ['Age', 'MP', 'Starts', 'Min', 'Gls', 'Ast', 'G-PK', 'PK', 'PKatt', 'CrdY', 'CrdR']].apply(pd.to_numeric)
 
 # Streamlit sidebar for Team selection
-
+# use containers to have a select all option with multi select.
 unique_team = sorted(df.Squad.unique())
-selected_team = st.sidebar.multiselect('Team', unique_team, unique_team)
+container_team = st.sidebar.beta_container()
+all_team = st.sidebar.checkbox('Select All Teams')
+
+if all_team:
+    selected_team = container_team.multiselect('Team', unique_team, unique_team)
+else:
+    selected_team = container_team.multiselect('Team', unique_team, unique_team)
 
 # Side bar for position selection
+# use containers to have a select all option with multi select.
 
 positions = sorted(df.Pos.unique())
-selected_position = st.sidebar.multiselect("Position", positions, positions)
+container_position = st.sidebar.beta_container()
+all_position = st.sidebar.checkbox('Select All Positions')
+
+if all_position:
+    selected_position = container_position.multiselect("Position", positions, positions)
+else:
+    selected_position = container_position.multiselect("Position", positions,positions)
 
 # Apply filters to the data
 df_selected = df[(df.Squad.isin(selected_team)) & (df.Pos.isin(selected_position))]
