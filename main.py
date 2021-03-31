@@ -2,16 +2,14 @@ import streamlit as st
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup, Comment
-import seaborn as sns
 import base64
-import matplotlib.pyplot as plt
-import numpy as np
+import plotly.express as px
 
 st.title('English Premier league players visualization and statistics')
 
 st.markdown("""
 This app performs simple webscraping of English Premier League Player statistics
-* **Python libraries:** base64, pandas, streamlit, bs4
+* **Python libraries:** base64, pandas, streamlit, bs4, plotly
 * **Data source:** [fbref.com](https://fbref.com/en/comps/9/stats/Premier-League-Stats#stats_standard).
 """)
 
@@ -77,13 +75,6 @@ df_selected = df[(df.Squad.isin(selected_team)) & (df.Pos.isin(selected_position
 st.dataframe(df_selected)
 
 
-# add download button for dataframe
-# def downloadfile(df):
-#     csv = df.to_csv(index=False)
-#     b64 = base64.b64encode(csv.encode()).decode()
-#     href = f'<a href="data:file/csv;base64,{b64}" download= "PlayersStats.csv"> Download as CSV FIle'
-#     return href
-
 def downloadfile(df):
     csv = df.to_csv(index=False)
     b64 = base64.b64encode(csv.encode()).decode()
@@ -93,4 +84,29 @@ def downloadfile(df):
 
 st.markdown(downloadfile(df_selected), unsafe_allow_html=True)
 
+# Visualize Nationality distribution using plotly
+# get data frame first
 
+df_nation = df_selected.groupby(['Squad', 'Nation'])['Nation'].count().reset_index(name='count').sort_values(['Squad',
+                                                                                                              'count'],
+                                                                                                             ascending=False)
+
+fig = px.bar(df_nation, x="Squad", y="count", color="Nation",
+             hover_data=['Squad'], barmode='stack', title="EPL Player Nationality distribution By Team")
+
+try:
+    st.write(fig)
+except:
+    st.error("No data selected. Please select Team and Position")
+    st.stop()
+
+# Player age distribution for each team
+df_age = df_selected.groupby(['Age', 'Squad'])['Player'].count().reset_index(name='count')
+fig_age = px.bar(df_age, x="Age", y="count", color="Squad",
+                 hover_data=['Squad'], barmode='stack', title="EPL Player Age distribution By Team")
+
+try:
+    st.write(fig_age)
+except:
+    st.error("No data selected. Please select Team and Position")
+    st.stop()
